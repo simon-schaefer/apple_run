@@ -3,19 +3,23 @@ import 'dart:ui';
 import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
 
+enum TileStatus { active, error, none }
+
 class Tile {
   Rect rect;
 
   double _activeDuration;
-  bool _isActive;
+  int _index;
+  TileStatus _status;
   bool _isOffScreen;
   bool _hasApple;
   Sprite _sprite;
 
-  Tile(Offset center, double width, double height, {bool hasApple = false}) {
+  Tile(Offset center, double width, double height, {int index = 0, bool hasApple = false}) {
     this.rect = Rect.fromCenter(center: center, width: width, height: height);
 
-    this._isActive = false;
+    this._status = TileStatus.none;
+    this._index = index;
     this._isOffScreen = false;
     this._hasApple = hasApple;
     this._activeDuration = 0;
@@ -30,7 +34,7 @@ class Tile {
 
     if (this.isActive()) {
       Paint paint = Paint();
-      paint.color = Colors.yellow;
+      paint.color = (this.status() == TileStatus.error) ? Colors.red : Colors.lightGreen;
       canvas.drawRect(displayedRect, paint);
     }
 
@@ -40,9 +44,9 @@ class Tile {
   }
 
   void update(double dt, Rect view) {
-    this._activeDuration = this._isActive ? this._activeDuration + dt : 0;
-    if (this._activeDuration > 0.5) {
-      this.toggle();
+    this._activeDuration = this.isActive() ? this._activeDuration + dt : 0;
+    if (this._activeDuration > 0.2) {
+      this._status = TileStatus.none;
     }
 
     // Check whether the tile still is within the screen.
@@ -52,12 +56,14 @@ class Tile {
   /* ======================================================================
   == Status ===============================================================
   ========================================================================= */
-  void toggle() {
-    this._isActive = !this._isActive;
+  void setActive({bool isError = false}) {
+    this._status = isError ? TileStatus.error : TileStatus.active;
     this._activeDuration = 0;
   }
 
-  bool isActive() => this._isActive;
+  int index() => this._index;
+  TileStatus status() => this._status;
+  bool isActive() => this.status() != TileStatus.none;
   bool isOffScreen() => this._isOffScreen;
   bool hasApple() => this._hasApple;
 }

@@ -6,13 +6,16 @@ import 'package:flame/game.dart';
 import 'package:flame/gestures.dart';
 import 'package:flutter/gestures.dart';
 
-import 'package:apple_run/screen.dart';
-import 'package:apple_run/tile.dart';
+import 'package:apple_run/components/score.dart';
+import 'package:apple_run/components/screen.dart';
+import 'package:apple_run/components/tile.dart';
 
 class AppleGame extends Game with TapDetector {
   List<Tile> tiles;
   Screen screen;
+  Score score;
 
+  int rowCounter;
   Random rnd;
   Offset viewOffset;
 
@@ -24,8 +27,11 @@ class AppleGame extends Game with TapDetector {
   void initialize() async {
     this.tiles = List<Tile>();
     this.rnd = Random();
+
     this.resize(await Flame.util.initialDimensions());
     this.viewOffset = this.screen.position();
+    this.score = Score(this.screen.size);
+    this.rowCounter = this.score.score + 1;
 
     final numRows = this.screen.size.height ~/ this.screen.tileSize;
     assert(numRows >= 2);
@@ -39,9 +45,12 @@ class AppleGame extends Game with TapDetector {
     for (var i = 0; i < numTiles; i++) {
       final x = i * tileSize + tileSize / 2;
       final hasApple = (i == indexApple);
-      final tile = Tile(Offset(x, yCenter), tileSize, tileSize, hasApple: hasApple);
+      final index = this.rowCounter;
+      final tile = Tile(Offset(x, yCenter), tileSize, tileSize, index: index, hasApple: hasApple);
       this.tiles.add(tile);
     }
+
+    this.rowCounter += 1;
   }
 
   /* ======================================================================
@@ -50,6 +59,7 @@ class AppleGame extends Game with TapDetector {
   @override
   void render(Canvas canvas) {
     this.tiles.forEach((Tile tile) => tile.render(canvas, this.screen.view));
+    this.score.render(canvas);
   }
 
   @override
@@ -69,6 +79,9 @@ class AppleGame extends Game with TapDetector {
     if (this.tiles.length > 4 && this.tiles.first.isOffScreen()) {
       this.tiles.removeRange(0, 4); // remove entire first row
     }
+
+    // Update scoring display.
+    this.score.update(dt);
   }
 
   @override
@@ -81,8 +94,17 @@ class AppleGame extends Game with TapDetector {
   void onTapDown(TapDownDetails details) {
     final position = this.screen.view.topLeft + details.globalPosition;
     final idxTouched = this.tiles.indexWhere((Tile tile) => tile.rect.contains(position));
-    this.tiles[idxTouched].toggle();
 
-    this.viewOffset = this.viewOffset - Offset(0, this.screen.tileSize);
+    // Check whether the "correct" tile has been touched. The "correct" tile is the
+    // tile one row higher than the previous touch as well as contains an apple.
+    final tileTouched = this.tiles[idxTouched];
+    final isCorrect = tileTouched.hasApple() && tileTouched.index() == this.score.score + 1;
+
+    // Update the
+    this.tiles[idxTouched].setActive(isError: !isCorrect);
+    if (isCorrect) {
+      this.score.increment();
+      this.viewOffset = this.viewOffset - Offset(0, this.screen.tileSize);
+    }
   }
 }
