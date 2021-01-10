@@ -12,7 +12,9 @@ import 'package:apple_run/tile.dart';
 class AppleGame extends Game with TapDetector {
   List<Tile> tiles;
   Screen screen;
+  int score;
 
+  int rowCounter;
   Random rnd;
   Offset viewOffset;
 
@@ -24,6 +26,9 @@ class AppleGame extends Game with TapDetector {
   void initialize() async {
     this.tiles = List<Tile>();
     this.rnd = Random();
+    this.score = 0;
+    this.rowCounter = this.score + 1;
+
     this.resize(await Flame.util.initialDimensions());
     this.viewOffset = this.screen.position();
 
@@ -39,9 +44,12 @@ class AppleGame extends Game with TapDetector {
     for (var i = 0; i < numTiles; i++) {
       final x = i * tileSize + tileSize / 2;
       final hasApple = (i == indexApple);
-      final tile = Tile(Offset(x, yCenter), tileSize, tileSize, hasApple: hasApple);
+      final index = this.rowCounter;
+      final tile = Tile(Offset(x, yCenter), tileSize, tileSize, index: index, hasApple: hasApple);
       this.tiles.add(tile);
     }
+
+    this.rowCounter += 1;
   }
 
   /* ======================================================================
@@ -81,8 +89,17 @@ class AppleGame extends Game with TapDetector {
   void onTapDown(TapDownDetails details) {
     final position = this.screen.view.topLeft + details.globalPosition;
     final idxTouched = this.tiles.indexWhere((Tile tile) => tile.rect.contains(position));
-    this.tiles[idxTouched].toggle();
 
-    this.viewOffset = this.viewOffset - Offset(0, this.screen.tileSize);
+    // Check whether the "correct" tile has been touched. The "correct" tile is the
+    // tile one row higher than the previous touch as well as contains an apple.
+    final tileTouched = this.tiles[idxTouched];
+    final isCorrect = tileTouched.hasApple() && tileTouched.index() == this.score + 1;
+
+    // Update the
+    this.tiles[idxTouched].setActive(isError: !isCorrect);
+    if (isCorrect) {
+      this.score += 1;
+      this.viewOffset = this.viewOffset - Offset(0, this.screen.tileSize);
+    }
   }
 }
