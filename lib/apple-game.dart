@@ -8,12 +8,14 @@ import 'package:flutter/gestures.dart';
 
 import 'package:apple_run/components/score.dart';
 import 'package:apple_run/components/screen.dart';
+import 'package:apple_run/components/stopwatch.dart';
 import 'package:apple_run/components/tile.dart';
 
 class AppleGame extends Game with TapDetector {
   List<Tile> tiles;
   Screen screen;
   Score score;
+  StopWatch stopwatch;
 
   int rowCounter;
   Random rnd;
@@ -31,6 +33,7 @@ class AppleGame extends Game with TapDetector {
     this.resize(await Flame.util.initialDimensions());
     this.viewOffset = this.screen.position();
     this.score = Score(this.screen.size);
+    this.stopwatch = StopWatch(this.screen.size);
     this.rowCounter = this.score.score + 1;
 
     final numRows = this.screen.size.height ~/ this.screen.tileSize;
@@ -60,6 +63,7 @@ class AppleGame extends Game with TapDetector {
   void render(Canvas canvas) {
     this.tiles.forEach((Tile tile) => tile.render(canvas, this.screen.view));
     this.score.render(canvas);
+    this.stopwatch.render(canvas);
   }
 
   @override
@@ -80,8 +84,9 @@ class AppleGame extends Game with TapDetector {
       this.tiles.removeRange(0, 4); // remove entire first row
     }
 
-    // Update scoring display.
+    // Update scoring and timer display.
     this.score.update(dt);
+    this.stopwatch.update(dt);
   }
 
   @override
@@ -100,9 +105,10 @@ class AppleGame extends Game with TapDetector {
     final tileTouched = this.tiles[idxTouched];
     final isCorrect = tileTouched.hasApple() && tileTouched.index() == this.score.score + 1;
 
-    // Update the
+    // Update the score and tile activity state (pressed tile is active when it is touched,
+    // it color depends on whether it is the "correct" tile or not).
     this.tiles[idxTouched].setActive(isError: !isCorrect);
-    if (isCorrect) {
+    if (isCorrect && this.stopwatch.isRunning()) {
       this.score.increment();
       this.viewOffset = this.viewOffset - Offset(0, this.screen.tileSize);
     }
