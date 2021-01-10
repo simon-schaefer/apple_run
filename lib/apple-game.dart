@@ -6,13 +6,14 @@ import 'package:flame/game.dart';
 import 'package:flame/gestures.dart';
 import 'package:flutter/gestures.dart';
 
-import 'package:apple_run/screen.dart';
-import 'package:apple_run/tile.dart';
+import 'package:apple_run/components/score.dart';
+import 'package:apple_run/components/screen.dart';
+import 'package:apple_run/components/tile.dart';
 
 class AppleGame extends Game with TapDetector {
   List<Tile> tiles;
   Screen screen;
-  int score;
+  Score score;
 
   int rowCounter;
   Random rnd;
@@ -26,11 +27,11 @@ class AppleGame extends Game with TapDetector {
   void initialize() async {
     this.tiles = List<Tile>();
     this.rnd = Random();
-    this.score = 0;
-    this.rowCounter = this.score + 1;
 
     this.resize(await Flame.util.initialDimensions());
     this.viewOffset = this.screen.position();
+    this.score = Score(this.screen.size);
+    this.rowCounter = this.score.score + 1;
 
     final numRows = this.screen.size.height ~/ this.screen.tileSize;
     assert(numRows >= 2);
@@ -58,6 +59,7 @@ class AppleGame extends Game with TapDetector {
   @override
   void render(Canvas canvas) {
     this.tiles.forEach((Tile tile) => tile.render(canvas, this.screen.view));
+    this.score.render(canvas);
   }
 
   @override
@@ -77,6 +79,9 @@ class AppleGame extends Game with TapDetector {
     if (this.tiles.length > 4 && this.tiles.first.isOffScreen()) {
       this.tiles.removeRange(0, 4); // remove entire first row
     }
+
+    // Update scoring display.
+    this.score.update(dt);
   }
 
   @override
@@ -93,12 +98,12 @@ class AppleGame extends Game with TapDetector {
     // Check whether the "correct" tile has been touched. The "correct" tile is the
     // tile one row higher than the previous touch as well as contains an apple.
     final tileTouched = this.tiles[idxTouched];
-    final isCorrect = tileTouched.hasApple() && tileTouched.index() == this.score + 1;
+    final isCorrect = tileTouched.hasApple() && tileTouched.index() == this.score.score + 1;
 
     // Update the
     this.tiles[idxTouched].setActive(isError: !isCorrect);
     if (isCorrect) {
-      this.score += 1;
+      this.score.increment();
       this.viewOffset = this.viewOffset - Offset(0, this.screen.tileSize);
     }
   }
