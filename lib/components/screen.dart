@@ -11,9 +11,9 @@ class Screen {
     this.view = Rect.zero;
   }
 
-  void move(Offset targetPosition, double dt) {
+  void move(Offset targetPosition, double dt, {double speedUp: 10.0}) {
     final dxdy = targetPosition - this.position();
-    this.view = this.view.shift(dxdy * dt);
+    this.view = this.view.shift(dxdy * speedUp * dt);
   }
 
   void resize(Size size) {

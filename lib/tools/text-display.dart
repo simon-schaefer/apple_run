@@ -9,7 +9,7 @@ class TextDisplay {
   TextDisplay({double fontSize = 90, TextAlign align = TextAlign.center}) {
     final textDirection = TextDirection.ltr;
     this.painter = TextPainter(textAlign: align, textDirection: textDirection);
-    this._textStyle = TextStyle(color: Color(0xffffffff), fontSize: fontSize);
+    this._textStyle = TextStyle(color: Color.fromRGBO(0, 0, 0, 1), fontSize: fontSize);
   }
 
   /// Render text at the offset [position] in the given [canvas].
