@@ -11,7 +11,7 @@ class StopWatch extends TextDisplay {
   Offset _position;
 
   StopWatch(Size screenSize) : super(fontSize: 10, align: TextAlign.center) {
-    this._position = Offset(10, 50);
+    this._position = Offset(10, 20);
     this._duration = 20.0;
   }
 

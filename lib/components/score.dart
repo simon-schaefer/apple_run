@@ -12,7 +12,7 @@ class Score extends TextDisplay {
   Offset _position;
 
   Score(Size screenSize) : super(fontSize: 10, align: TextAlign.right) {
-    this._position = Offset(screenSize.width - 100, 50);
+    this._position = Offset(screenSize.width - 100, 20);
     this.score = 0;
     this.highscore = 0;
 

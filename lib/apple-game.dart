@@ -34,11 +34,11 @@ class AppleGame extends Game with TapDetector {
     this.viewOffset = this.screen.position();
     this.score = Score(this.screen.size);
     this.stopwatch = StopWatch(this.screen.size);
-    this.rowCounter = this.score.score;
+    this.rowCounter = this.score.score + 1;
 
     final numRows = this.screen.size.height ~/ this.screen.tileSize;
     assert(numRows >= 2);
-    this.addRow(this.screen.size.height - this.screen.tileSize / 2, numTiles: 4);
+    this.addRow(this.screen.size.height - 3 * this.screen.tileSize / 2, numTiles: 4);
   }
 
   void addRow(double yCenter, {int numTiles = 4}) {
